@@ -3,19 +3,37 @@ var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
 
-var getUserRepos = function() {
+
+var formSubmitHandler = function(event) {
+    event.preventDefault();
+
+    var username = nameInputEl.value.trim();
+
+    if (username) {
+        getUserRepos(username);
+        
+        repoContainerEl.textContent = '';
+        nameInputEl.value = '';
+    } else {
+        alert("Please enter a Github username");
+    }
+};
+
+var getUserRepos = function(user) {
     var apiUrl = "https://api.github.com/users/" + user + "/repos";
 
     //make a request to the url
-   fetch(apiUrl)
-    .then(function(response){
+   fetch(apiUrl).then(function(response){
+    
         //response was successful
        if (response.ok) {
+           console.log(response);
            response.json().then(function(data){
+               console.log(data);
                displayRepos(data, user);
            });
        } else {
-           alert("Error: GitHub User Not Found");
+           alert('Error: ' + response.statusText);
        }
    })
    .catch(function(error){
@@ -24,27 +42,14 @@ var getUserRepos = function() {
    });
 };
 
-var formSubmitHandler = function(event) {
-    event.preventDefault();
-    var username = nameInputEl.value.trim();
-
-    if (username) {
-        getUserRepos(username);
-        nameInputEl.value = "";
-    } else {
-        alert("Please enter a Github username");
-    }
-    console.log(event);
-};
 
 var displayRepos = function(repos, searchTerm) {
     //check if api returned any repos
-if (repos.length === 0) {
-    repoContainerEl.textContent = "No Repositories found";
+    if (repos.length === 0) {
+        repoContainerEl.textContent = "No Repositories found";
     
-    return;
-}
-    repoContainerEl.textContent = "";
+        return;
+    }
     repoSearchTerm.textContent = searchTerm;
     //looop over repos
     for (var i = 0; i < repos.length; i++) {
